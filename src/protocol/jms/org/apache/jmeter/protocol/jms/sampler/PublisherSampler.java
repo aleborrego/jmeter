@@ -78,6 +78,10 @@ public class PublisherSampler extends BaseJMSSampler implements TestStateListene
     private static final String JMS_PRIORITY = "jms.priority"; // $NON-NLS-1$
 
     private static final String JMS_EXPIRATION = "jms.expiration"; // $NON-NLS-1$
+    
+    private static final String JMS_TYPE = "jms.jmsType"; // $NON-NLS-1$
+    
+    private static final String JMS_CORRELATION_ID = "jms.correlationId"; // $NON-NLS-1$
 
     //--
 
@@ -176,24 +180,26 @@ public class PublisherSampler extends BaseJMSSampler implements TestStateListene
             int deliveryMode = getUseNonPersistentDelivery() ? DeliveryMode.NON_PERSISTENT : DeliveryMode.PERSISTENT; 
             int priority = Integer.parseInt(getPriority());
             long expiration = Long.parseLong(getExpiration());
+            String jMSType = getJMSType();
+            String jMSCorrelationId = getJMSCorrelationId();
             
             for (int idx = 0; idx < loop; idx++) {
                 if (JMSPublisherGui.TEXT_MSG_RSC.equals(type)){
                     String tmsg = getMessageContent();
-                    Message msg = publisher.publish(tmsg, getDestination(), msgProperties, deliveryMode, priority, expiration);
+                    Message msg = publisher.publish(tmsg, getDestination(), msgProperties, deliveryMode, priority, expiration,jMSType,jMSCorrelationId);
                     buffer.append(tmsg);
                     Utils.messageProperties(propBuffer, msg);
                 } else if (JMSPublisherGui.MAP_MSG_RSC.equals(type)){
                     Map<String, Object> m = getMapContent();
-                    Message msg = publisher.publish(m, getDestination(), msgProperties, deliveryMode, priority, expiration);
+                    Message msg = publisher.publish(m, getDestination(), msgProperties, deliveryMode, priority, expiration, jMSType, jMSCorrelationId);
                     Utils.messageProperties(propBuffer, msg);
                 } else if (JMSPublisherGui.OBJECT_MSG_RSC.equals(type)){
                     Serializable omsg = getObjectContent();
-                    Message msg = publisher.publish(omsg, getDestination(), msgProperties, deliveryMode, priority, expiration);
+                    Message msg = publisher.publish(omsg, getDestination(), msgProperties, deliveryMode, priority, expiration, jMSType, jMSCorrelationId);
                     Utils.messageProperties(propBuffer, msg);
                 } else if (JMSPublisherGui.BYTES_MSG_RSC.equals(type)){
                     byte[] bmsg = getBytesContent();
-                    Message msg = publisher.publish(bmsg, getDestination(), msgProperties, deliveryMode, priority, expiration);
+                    Message msg = publisher.publish(bmsg, getDestination(), msgProperties, deliveryMode, priority, expiration, jMSType, jMSCorrelationId);
                     Utils.messageProperties(propBuffer, msg);
                 } else {
                     throw new JMSException(type+ " is not recognised");                    
@@ -513,12 +519,28 @@ public class PublisherSampler extends BaseJMSSampler implements TestStateListene
         return getPropertyAsString(JMS_PRIORITY, Utils.DEFAULT_PRIORITY_4);
     }
     
+    public String getJMSType() {
+        return getPropertyAsString(JMS_TYPE, "");
+    }
+    
+    public String getJMSCorrelationId() {
+        return getPropertyAsString(JMS_CORRELATION_ID, "");
+    }
+    
     public void setPriority(String s) {
         setProperty(JMS_PRIORITY, s, Utils.DEFAULT_PRIORITY_4);
     }
     
     public void setExpiration(String s) {
         setProperty(JMS_EXPIRATION, s, Utils.DEFAULT_NO_EXPIRY);
+    }
+    
+    public void setJMSType(String s) {
+    	setProperty(JMS_TYPE, s, "");
+    }
+    
+    public void setJMSCorrelationId(String s) {
+    	setProperty(JMS_CORRELATION_ID, s, "");
     }
     
     /**

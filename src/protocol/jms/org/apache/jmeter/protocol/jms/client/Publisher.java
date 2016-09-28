@@ -144,33 +144,33 @@ public class Publisher implements Closeable {
         }
     }
     
-    public Message publish(String text, String destinationName, Map<String, Object> properties, int deliveryMode, int priority, long expiration)
+    public Message publish(String text, String destinationName, Map<String, Object> properties, int deliveryMode, int priority, long expiration, String jMSType, String jMSCorrelationId)
             throws JMSException, NamingException {
         TextMessage msg = session.createTextMessage(text);
-        return setPropertiesAndSend(destinationName, properties, msg, deliveryMode, priority, expiration);
+        return setPropertiesAndSend(destinationName, properties, msg, deliveryMode, priority, expiration, jMSType, jMSCorrelationId);
     }
     
-    public Message publish(Serializable contents, String destinationName, Map<String, Object> properties, int deliveryMode, int priority, long expiration)
+    public Message publish(Serializable contents, String destinationName, Map<String, Object> properties, int deliveryMode, int priority, long expiration, String jMSType, String jMSCorrelationId)
             throws JMSException, NamingException {
         ObjectMessage msg = session.createObjectMessage(contents);
-        return setPropertiesAndSend(destinationName, properties, msg, deliveryMode, priority, expiration);
+        return setPropertiesAndSend(destinationName, properties, msg, deliveryMode, priority, expiration, jMSType, jMSCorrelationId);
     }
     
-    public Message publish(byte[] bytes, String destinationName, Map<String, Object> properties, int deliveryMode, int priority, long expiration)
+    public Message publish(byte[] bytes, String destinationName, Map<String, Object> properties, int deliveryMode, int priority, long expiration, String jMSType, String jMSCorrelationId)
             throws JMSException, NamingException {
         BytesMessage msg = session.createBytesMessage();
         msg.writeBytes(bytes);
-        return setPropertiesAndSend(destinationName, properties, msg, deliveryMode, priority, expiration);
+        return setPropertiesAndSend(destinationName, properties, msg, deliveryMode, priority, expiration, jMSType, jMSCorrelationId);
     }
     
     public MapMessage publish(Map<String, Object> map, String destinationName, Map<String, Object> properties, 
-            int deliveryMode, int priority, long expiration)
+            int deliveryMode, int priority, long expiration, String jMSType, String jMSCorrelationId)
             throws JMSException, NamingException {
         MapMessage msg = session.createMapMessage();
         for (Entry<String, Object> me : map.entrySet()) {
             msg.setObject(me.getKey(), me.getValue());
         }
-        return (MapMessage)setPropertiesAndSend(destinationName, properties, msg, deliveryMode, priority, expiration);
+        return (MapMessage)setPropertiesAndSend(destinationName, properties, msg, deliveryMode, priority, expiration, jMSType, jMSCorrelationId);
     }
 
     /**
@@ -186,9 +186,11 @@ public class Publisher implements Closeable {
      */
     private Message setPropertiesAndSend(String destinationName,
             Map<String, Object> properties, Message msg,
-            int deliveryMode, int priority, long expiration)
+            int deliveryMode, int priority, long expiration, String jMSType, String jMSCorrelationId)
             throws JMSException, NamingException {
         Utils.addJMSProperties(msg, properties);
+        msg.setJMSType(jMSType);
+        msg.setJMSCorrelationID(jMSCorrelationId);
         if (staticDest || destinationName == null) {
             producer.send(msg, deliveryMode, priority, expiration);
         } else {
